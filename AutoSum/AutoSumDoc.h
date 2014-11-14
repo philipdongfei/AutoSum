@@ -39,12 +39,13 @@ public:
 public:
 	UINT    AutoSummarization(void);
 	UINT    PretreatComment(void);//文本预处理
-	double  **ComputingLexRank(std::vector<std::string> &Sentences,double dCT);
+	real_2d_array	ComputingLexRank(std::vector<std::string> &Sentences,double dCT);
 	double  idf_modified_cosine(std::string Sentence1,std::string Sentence2);
 	double  **PowerMethod(double **pCosineMatrix,int nCount,double dError);
 	real_2d_array  PowerMethod(const real_2d_array &CosineMatrix,int nCount,double dError);
 	int		GetTF(std::string &strWord,std::string Sentence);
 	double  GetIDF(std::string &strWord);
+	bool    WriteSummary(std::string strText);//写文件
 // 重写
 public:
 	virtual BOOL OnNewDocument();

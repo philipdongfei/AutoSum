@@ -28,7 +28,7 @@
 #include <atlbase.h>
 #include <io.h>
 #include <math.h>
-
+#include <fstream>
 #include "Graph.h"
 //#include "Matrix.h"
 
@@ -231,23 +231,73 @@ void CAutoSumDoc::OnDoAutosum()
 UINT  CAutoSumDoc::AutoSummarization(void)
 {
 	int nCount(0);
-
+	std::string   strText;
+	char *pBuffer(NULL);
 	if((nCount =PretreatComment()) > 0)//分词和句子成功
 	{
 		TRACE("auto summarization\n");
-		
+		int nIndex = 0;
 		double dCT = 0.1;
-		double **pLexRank = ComputingLexRank(m_vectorsentences,dCT);
+		real_2d_array pLexRank = ComputingLexRank(m_vectorsentences,dCT);
+		strText = "dCT=0.1,P=";
+		WriteSummary(strText);
+
+		 TRACE("\ndCT=0.1,P=%s\n",pLexRank.tostring(5).c_str());
+		 strText = pLexRank.tostring(5);
+		 WriteSummary(strText);
+		 for(nIndex = 0; nIndex < nCount; nIndex++)
+		 {
+			 if (pLexRank[nIndex][0] == 1.0)
+			 {
+				 TRACE("summary1:%s",m_vectorsentences[nIndex].c_str());
+				 pBuffer = new char[m_vectorsentences[nIndex].size() + 64];
+				 memset(pBuffer,0x0,m_vectorsentences[nIndex].size() + 64);
+				 sprintf(pBuffer,"summary1(%d):%s\r\n",nIndex,m_vectorsentences[nIndex].c_str());
+				strText = pBuffer;
+				WriteSummary(strText);
+				delete []pBuffer;
+				pBuffer = NULL;
+			 }
+		 }
+
+		
+		strText.clear();
 		dCT = 0.2;
-		ComputingLexRank(m_vectorsentences,dCT);
+		pLexRank = ComputingLexRank(m_vectorsentences,dCT);
+		strText = "dCT=0.2,P=";
+		WriteSummary(strText);
+		 TRACE("\ndCT=0.2,P=%s\n",pLexRank.tostring(5).c_str());
+		 strText = pLexRank.tostring(5);
+		 WriteSummary(strText);
+		 for(nIndex = 0; nIndex < nCount; nIndex++)
+		 {
+			 if (pLexRank[nIndex][0] == 1.0)
+			 {
+				 TRACE("summary2:%s",m_vectorsentences[nIndex].c_str());
+				 pBuffer = new char[m_vectorsentences[nIndex].size() + 64];
+				 memset(pBuffer,0x0,m_vectorsentences[nIndex].size() + 64);
+				 sprintf(pBuffer,"summary2(%d):%s\r\n",nIndex,m_vectorsentences[nIndex].c_str());
+				strText = pBuffer;
+				WriteSummary(strText);
+				delete []pBuffer;
+				pBuffer = NULL;
+			 }
+		 }
+		
+		strText.clear();
 		dCT = 0.3;
-		ComputingLexRank(m_vectorsentences,dCT);
+		pLexRank = ComputingLexRank(m_vectorsentences,dCT);
+		strText = "dCT=0.3,P=";
+		WriteSummary(strText);
+		 TRACE("\ndCT=0.3,P=%s\n",pLexRank.tostring(5).c_str());
+		 strText = pLexRank.tostring(5);
+		 WriteSummary(strText);
 
 
 		
 		
 	}
-
+	AfxMessageBox("Get Summary!");
 	return nCount;
 }
 //PretreatComment函数：文本预处理
@@ -256,11 +306,17 @@ UINT  CAutoSumDoc::AutoSummarization(void)
 UINT  CAutoSumDoc::PretreatComment(void)
 {
 	UINT nRet(0);
-	std::string  strSentence("");
+	std::string  strSentence(""),strText("");
+
+	char Buffer[32];
+	
 
 	for (int nIndex1=0; nIndex1 < m_vectorFilePath.size(); nIndex1++)
 	{
-
+		memset(Buffer,0,sizeof(Buffer));
+		sprintf(Buffer,"Text%d:\r\n",nIndex1);
+		strText = Buffer;
+		WriteSummary(strText);
 		
 		std::string strPath = m_vectorFilePath[nIndex1];
 		if (strPath.size() > 0)
@@ -278,7 +334,9 @@ UINT  CAutoSumDoc::PretreatComment(void)
 				t_hFile.Read(pBuf,nSize);
 				t_hFile.Close();
 			}
-
+			strText = pBuf;
+			WriteSummary(strText);
+			WriteSummary("\r\n");
 			if(!ICTCLAS_Init()) //初始化分词组件。
 			{
 				printf("Init fails\n");  
@@ -301,6 +359,8 @@ UINT  CAutoSumDoc::PretreatComment(void)
 			{
 				memset(Tempp,0x0,sizeof(Tempp));
 				char* pDest = strstr(pBuf+nPos4,"+++++");
+				if (!pDest)
+					break;
 				memcpy(Tempp,pBuf+nPos4,pDest-pBuf-nPos4);
 				switch(i)
 				{
@@ -407,7 +467,7 @@ UINT  CAutoSumDoc::PretreatComment(void)
 	return nRet;
 }
 
-double** CAutoSumDoc::ComputingLexRank(std::vector<std::string> &Sentences,double dCT)
+real_2d_array CAutoSumDoc::ComputingLexRank(std::vector<std::string> &Sentences,double dCT)
 {
 	int nCount = Sentences.size();
 	double **pLexRank = NULL;//new double[nCount];
@@ -458,7 +518,7 @@ double** CAutoSumDoc::ComputingLexRank(std::vector<std::string> &Sentences,doubl
 
 	////////////////////////find strongly subgraph
 
-	Graph<int,double> m_graph(pCosineMatrix,nCount);   
+/*	Graph<int,double> m_graph(pCosineMatrix,nCount);   
 	char *pBuf = new char[4*nCount];
 	memset(pBuf,0,4*nCount);
 	int nSubNum = m_graph.DFS_Traveling(0,pBuf);
@@ -552,7 +612,7 @@ double** CAutoSumDoc::ComputingLexRank(std::vector<std::string> &Sentences,doubl
 	{
 		delete []pBuf;
 		pBuf = NULL;
-	}
+	}*/
 	/////////////////////////////////end
 	TRACE("\nCM=%s\n",CosineMatrix.tostring(0).c_str());
 	for( nI = 0; nI < nCount; nI++)
@@ -588,7 +648,7 @@ double** CAutoSumDoc::ComputingLexRank(std::vector<std::string> &Sentences,doubl
 		pCosineMatrix = NULL;
 	}
 
-	return pLexRank;
+	return P;
 }
 
 double  CAutoSumDoc::idf_modified_cosine(std::string Sentence1,std::string Sentence2)
@@ -807,14 +867,14 @@ real_2d_array  CAutoSumDoc::PowerMethod(const real_2d_array &CosineMatrix,int nC
 	do{
 		value = 0.0;
 		 rmatrixgemm(m, n, k, alpha, M, ia, ja, optypea, P, ib, jb, optypeb, beta, Pt, ic, jc);
-		 TRACE("\nPt=%s\n",Pt.tostring(5).c_str());
+	//	 TRACE("\nPt=%s\n",Pt.tostring(5).c_str());
 		 for (i=0; i<nCount; i++)
 		 {
 			 
 			 value += fabs(Pt[i][0] - P[i][0]);
 			
 		
-			 TRACE("value=%.5f\n",value);
+	//		 TRACE("value=%.5f\n",value);
 		 }
 	     memset(chValue,0,sizeof(chValue));
 		 sprintf(chValue,"%.5f",value);
@@ -822,8 +882,36 @@ real_2d_array  CAutoSumDoc::PowerMethod(const real_2d_array &CosineMatrix,int nC
 		 TRACE("\nP=%s\n",P.tostring(5).c_str());
 	}while(strcmp(chValue,chLimit) > 0);
 
+	double dbMax(0.0),t_dbValue(0.0);
+	for (i=0; i<nCount; i++)
+	{
+		t_dbValue = Pt[i][0];
+		if (dbMax < t_dbValue)
+			dbMax = t_dbValue;
+	}
+	for (i=0; i<nCount; i++)
+	{
+		Pt[i][0] /= dbMax;
+	}
+	 TRACE("\nP=%s\n",Pt.tostring(5).c_str());
 	return Pt;
 
+}
+
+bool   CAutoSumDoc::WriteSummary(std::string strText)//写文件
+{
+	bool bRet(true);
+	std::fstream out;
+	
+
+	out.open("E:\\D_HD\\交大计算机工程硕士\\PaperProgram\\AutoSum\\summary.txt",std::fstream::out | std::fstream::app | std::fstream::binary  );
+	if (!out.is_open())
+		return false;
+	out << strText << "\r\n";
+
+	out.close();
+	
+	return bRet;
 }
 
 
@@ -839,3 +927,4 @@ UINT    StarSummary(LPVOID pParam)
 	return 0;
 
 }
+
