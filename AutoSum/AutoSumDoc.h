@@ -64,7 +64,7 @@ public:
 #endif
 
 protected:
-
+	integer_1d_array m_ArrayDeg;//记录节点的度数组
 // 生成的消息映射函数
 protected:
 	DECLARE_MESSAGE_MAP()

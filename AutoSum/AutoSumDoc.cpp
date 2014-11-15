@@ -239,6 +239,41 @@ UINT  CAutoSumDoc::AutoSummarization(void)
 		int nIndex = 0;
 		double dCT = 0.1;
 		real_2d_array pLexRank = ComputingLexRank(m_vectorsentences,dCT);
+
+		///////////////get max degree's node
+		int nDegrees(0);
+		std::vector<int> vectNo;
+		
+		for(nIndex=0; nIndex < m_ArrayDeg.length(); nIndex++)
+		{
+			if ( m_ArrayDeg[nIndex] > 0)
+			{
+				if (  nDegrees < m_ArrayDeg[nIndex] )
+				{
+					if (vectNo.size() > 0)
+						vectNo.clear();
+					vectNo.push_back(nIndex);
+				}
+				else if (nDegrees == m_ArrayDeg[nIndex])
+					vectNo.push_back(nIndex);
+			}
+		}
+
+		for (nIndex = 0; nIndex < vectNo.size(); ++nIndex)
+		{
+			int t_nIndex = vectNo[nIndex];
+			TRACE("summary0:%s",m_vectorsentences[t_nIndex].c_str());
+			pBuffer = new char[m_vectorsentences[t_nIndex].size() + 64];
+			memset(pBuffer,0x0,m_vectorsentences[t_nIndex].size() + 64);
+			sprintf(pBuffer,"summary0_0.1(%d):%s\r\n",t_nIndex,m_vectorsentences[t_nIndex].c_str());
+			strText = pBuffer;
+			WriteSummary(strText);
+			delete []pBuffer;
+			pBuffer = NULL;
+		}
+
+		//////////////////////
+
 		strText = "dCT=0.1,P=";
 		WriteSummary(strText);
 
@@ -264,6 +299,41 @@ UINT  CAutoSumDoc::AutoSummarization(void)
 		strText.clear();
 		dCT = 0.2;
 		pLexRank = ComputingLexRank(m_vectorsentences,dCT);
+		///////////////get max degree's node
+		nDegrees = 0;
+		vectNo.clear();
+		
+		for(nIndex=0; nIndex < m_ArrayDeg.length(); nIndex++)
+		{
+			if ( m_ArrayDeg[nIndex] > 0 )
+			{
+				if ( nDegrees < m_ArrayDeg[nIndex] )
+				{
+					if (vectNo.size() > 0)
+						vectNo.clear();
+					vectNo.push_back(nIndex);
+				}
+				else if (nDegrees == m_ArrayDeg[nIndex])
+					vectNo.push_back(nIndex);
+			}
+
+		}
+
+		for (nIndex = 0; nIndex < vectNo.size(); ++nIndex)
+		{
+			int t_nIndex = vectNo[nIndex];
+			TRACE("summary0:%s",m_vectorsentences[t_nIndex].c_str());
+			pBuffer = new char[m_vectorsentences[t_nIndex].size() + 64];
+			memset(pBuffer,0x0,m_vectorsentences[t_nIndex].size() + 64);
+			sprintf(pBuffer,"summary0_0.2(%d):%s\r\n",t_nIndex,m_vectorsentences[t_nIndex].c_str());
+			strText = pBuffer;
+			WriteSummary(strText);
+			delete []pBuffer;
+			pBuffer = NULL;
+		}
+
+		//////////////////////
+
 		strText = "dCT=0.2,P=";
 		WriteSummary(strText);
 		 TRACE("\ndCT=0.2,P=%s\n",pLexRank.tostring(5).c_str());
@@ -287,6 +357,40 @@ UINT  CAutoSumDoc::AutoSummarization(void)
 		strText.clear();
 		dCT = 0.3;
 		pLexRank = ComputingLexRank(m_vectorsentences,dCT);
+		///////////////get max degree's node
+		 nDegrees = 0;
+		 vectNo.clear();
+		
+		for(nIndex=0; nIndex < m_ArrayDeg.length(); nIndex++)
+		{
+			if (m_ArrayDeg[nIndex] > 0 )
+			{
+				if (  nDegrees < m_ArrayDeg[nIndex] )
+				{
+					if (vectNo.size() > 0)
+						vectNo.clear();
+					vectNo.push_back(nIndex);
+				}
+				else if (nDegrees == m_ArrayDeg[nIndex])
+					vectNo.push_back(nIndex);
+			}
+
+		}
+
+		for (nIndex = 0; nIndex < vectNo.size(); ++nIndex)
+		{
+			int t_nIndex = vectNo[nIndex];
+			TRACE("summary0:%s",m_vectorsentences[t_nIndex].c_str());
+			pBuffer = new char[m_vectorsentences[t_nIndex].size() + 64];
+			memset(pBuffer,0x0,m_vectorsentences[t_nIndex].size() + 64);
+			sprintf(pBuffer,"summary0_0.3(%d):%s\r\n",t_nIndex,m_vectorsentences[t_nIndex].c_str());
+			strText = pBuffer;
+			WriteSummary(strText);
+			delete []pBuffer;
+			pBuffer = NULL;
+		}
+
+		//////////////////////
 		strText = "dCT=0.3,P=";
 		WriteSummary(strText);
 		 TRACE("\ndCT=0.3,P=%s\n",pLexRank.tostring(5).c_str());
@@ -435,7 +539,7 @@ UINT  CAutoSumDoc::PretreatComment(void)
 				//	t_file.Write(szLine,szLine.GetLength());
 					if (szType.GetAt(0) == 'w')
 					{
-						if (szType.GetLength() > 1 && szType.GetAt(1)=='j')
+						if (szType.GetLength() > 1 && (szType.GetAt(1)=='j' || szType.GetAt(1)=='w' || szType.GetAt(1)=='t' || szType.GetAt(1)=='f'))
 						{
 							++nSencNo;
 							nWordNo = 0;
@@ -453,6 +557,7 @@ UINT  CAutoSumDoc::PretreatComment(void)
 				++nLineNo;
 				token = strtok(NULL,seps);
 			}
+			if (strSentence.size() > 0)
 			m_vectorsentences.push_back(strSentence);
 			free(sRst);
 			sRst = NULL;
@@ -481,12 +586,22 @@ real_2d_array CAutoSumDoc::ComputingLexRank(std::vector<std::string> &Sentences,
 		pCosineMatrix[i] = pCosineMatrix[i-1]+nCount;
 	}
 
-	real_2d_array  CosineMatrix;
+	real_2d_array  CosineMatrix,CCMatrix;
+
 	CosineMatrix.setlength(nCount,nCount);
-	
-	int nI,nJ;
+	CCMatrix.setlength(nCount,nCount);//continue cosine matrix
+	real_2d_array    TotalCosVector,TotalEdges,TotalNBCos;
+	TotalCosVector.setlength(nCount,1);
+	TotalEdges.setlength(nCount,1);
+	TotalNBCos.setlength(1,nCount);
+	int nI(0),nJ(0);
+	if (m_ArrayDeg.length() == 0)
+		m_ArrayDeg.setlength(nCount);
 	for( nI = 0; nI < nCount; nI++)
 	{
+		pDegree[nI] = 0;
+		TotalEdges[nI][0] = 1.0;
+		TotalCosVector[nI][0] = 0;
 		for( nJ = 0; nJ < nCount; nJ++)
 		{
 			//*((pCosineMatrix+nI*nCount*sizeof(double))[nJ])
@@ -500,11 +615,12 @@ real_2d_array CAutoSumDoc::ComputingLexRank(std::vector<std::string> &Sentences,
 				dd = 0;
 			pCosineMatrix[nI][nJ] = dd;
 			CosineMatrix[nI][nJ] = dd;
+			CCMatrix[nI][nJ] = dd;//similarity value matrix
 			if (pCosineMatrix[nI][nJ] > dCT)
 			{
 				pCosineMatrix[nI][nJ] = 1.0;
 				CosineMatrix[nI][nJ] = 1.0;
-				pDegree[nI]++;
+				pDegree[nI] += 1;
 			}
 			else
 			{
@@ -512,9 +628,39 @@ real_2d_array CAutoSumDoc::ComputingLexRank(std::vector<std::string> &Sentences,
 				CosineMatrix[nI][nJ] = 0.0;
 			}
 		}
+		int p = pDegree[nI];
+		m_ArrayDeg(nI) =  p;//
+
+
 	}
 
+	//////////////////add by dongfei 2014.11.15 total cosine value 
+	ae_int_t m = nCount;
+	ae_int_t n = 1;
+	ae_int_t k = nCount;
+	double alpha = 1.0;
+	ae_int_t ia = 0;
+	ae_int_t ja = 0;
+	ae_int_t optypea = 1;
+	ae_int_t ib = 0;
+	ae_int_t jb = 0;
+	ae_int_t optypeb = 0;
+	double beta = 0.0;
+	ae_int_t ic = 0;
+	ae_int_t jc = 0;
 
+
+	TRACE("CCMatrix:%s\n",CCMatrix.tostring(3).c_str());
+	 rmatrixgemm(m, n, k, alpha, CCMatrix, ia, ja, optypea, TotalEdges, ib, jb, optypeb, beta, TotalCosVector, ic, jc);
+	 TRACE("TotalCosVector:%s\n",TotalCosVector.tostring(3).c_str());
+
+	 m = 1;
+	 n = nCount;
+	 k = nCount;
+	  TRACE("CosineMatrix:%s\n",CosineMatrix.tostring(0).c_str());
+	 rmatrixgemm(m, n, k, alpha, TotalCosVector, ia, ja, optypea, CosineMatrix, ib, jb, optypeb, beta, TotalNBCos, ic, jc);
+	 TRACE("TotalNBCos:%s\n",TotalNBCos.tostring(3).c_str());
+	///////////////////
 
 	////////////////////////find strongly subgraph
 
@@ -629,16 +775,21 @@ real_2d_array CAutoSumDoc::ComputingLexRank(std::vector<std::string> &Sentences,
 			else
 			{
 				pCosineMatrix[nI][nJ] = 1.0/(double)nCount;
-				CosineMatrix[nI][nJ] = 1.0/(double)nCount;
+				CosineMatrix[nI][nJ] = 0;
 			}
 			TRACE("%f ",CosineMatrix[nI][nJ]);
+			if (TotalNBCos[0][nJ] > 0 )
+				CCMatrix[nI][nJ] /= TotalNBCos[0][nJ];
+			else
+				CCMatrix[nI][nJ] = 0;//
 		}
 
 	}
-	TRACE("\nCM=%s\n",CosineMatrix.tostring(5).c_str());
-	
+	TRACE("\nCosineMatrix=%s\n",CosineMatrix.tostring(5).c_str());
+	TRACE("\CCMatrix=%s\n",CCMatrix.tostring(5).c_str());
 	double dError(0.0);
-	real_2d_array  P = PowerMethod(CosineMatrix,nCount,dError);
+//	real_2d_array  P = PowerMethod(CosineMatrix,nCount,dError);//discrete lexrank
+	real_2d_array  P = PowerMethod(CCMatrix,nCount,dError);// continueous lexrank
 //	pLexRank = PowerMethod(pCosineMatrix,nCount,dError);
 	delete []pDegree;
 	if(pCosineMatrix)
@@ -817,7 +968,7 @@ real_2d_array  CAutoSumDoc::PowerMethod(const real_2d_array &CosineMatrix,int nC
 	sprintf(chLimit,"%.5f",dError);
 	std::string   strLimit;
 	
-	double dbStart = 1.0/(double)nCount,d=0.85;
+	double dbStart = 1.0/(double)nCount,d=0.15;
 	P.setlength(nCount,1);
 	Pt.setlength(nCount,1);
 	Pdiff.setlength(nCount,1);
@@ -834,18 +985,19 @@ real_2d_array  CAutoSumDoc::PowerMethod(const real_2d_array &CosineMatrix,int nC
 		for(j=0; j<nCount; j++)
 		{
 			
-			E[i][j] = (1.0-d)/(double)nCount;
-			M[i][j] *= d;
+			E[i][j] = d/(double)nCount;//dU(d/N)
+			M[i][j] *= (1-d);//(1-d)B
 
-			TRACE("%f ",M[i][j]);
+			TRACE("%f \n",M[i][j]);
 			M[i][j] += E[i][j];
+			TRACE("%f \n",M[i][j]);
 		}
 		TRACE("\n");
 	}
-	TRACE("\nP=%s\n",P.tostring(5).c_str());
+	TRACE("\nP=%s\n",P.tostring(5).c_str());//problity vector
 	TRACE("\nPt=%s\n",Pt.tostring(1).c_str());
 	TRACE("\nE=%s\n",E.tostring(5).c_str());
-	TRACE("\nM=%s\n",M.tostring(5).c_str());
+	TRACE("\nM=%s\n",M.tostring(5).c_str());//transition matrix
 	
 	double value(0.0),threshold(0.0);
 
