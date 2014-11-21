@@ -29,6 +29,7 @@
 #include <io.h>
 #include <math.h>
 #include <fstream>
+#include <algorithm>
 #include "Graph.h"
 //#include "Matrix.h"
 
@@ -71,6 +72,7 @@ END_MESSAGE_MAP()
 CAutoSumDoc::CAutoSumDoc()
 {
 	// TODO: 在此添加一次性构造代码
+	m_KSentence = 3;//
 
 }
 
@@ -662,6 +664,7 @@ real_2d_array CAutoSumDoc::ComputingLexRank(std::vector<std::string> &Sentences,
 	 TRACE("TotalNBCos:%s\n",TotalNBCos.tostring(3).c_str());
 	///////////////////
 
+
 	////////////////////////find strongly subgraph
 
 /*	Graph<int,double> m_graph(pCosineMatrix,nCount);   
@@ -788,9 +791,110 @@ real_2d_array CAutoSumDoc::ComputingLexRank(std::vector<std::string> &Sentences,
 	TRACE("\nCosineMatrix=%s\n",CosineMatrix.tostring(5).c_str());
 	TRACE("\CCMatrix=%s\n",CCMatrix.tostring(5).c_str());
 	double dError(0.0);
-//	real_2d_array  P = PowerMethod(CosineMatrix,nCount,dError);//discrete lexrank
-	real_2d_array  P = PowerMethod(CCMatrix,nCount,dError);// continueous lexrank
+	real_2d_array  P = PowerMethod(CosineMatrix,nCount,dError);//discrete lexrank
+//	real_2d_array  P = PowerMethod(CCMatrix,nCount,dError);// continueous lexrank
 //	pLexRank = PowerMethod(pCosineMatrix,nCount,dError);
+
+	///////重新分级，选取k-1个经常经过的节点。
+	int nIndex = 0;
+	int t_nIndex(0),t_nIndex1(0),nRow_H(4),nCols_H(4),nSubRow(0),nSubCols(0);
+	for(nIndex = 0; nIndex <nCount; nIndex++)
+	{
+		if (P[nIndex][0] == 1.0)
+		{
+			m_vectorRank.push_back(nIndex);
+		}
+	}
+	nRow_H = CosineMatrix.rows();
+	nCols_H = CosineMatrix.cols();
+	real_2d_array  t_Eye,t_Q,t_N;
+
+	std::vector<int>   t_vectRowNo;
+	alglib::ae_int_t   t_Row(0),t_Column(0);
+	std::vector<int>::iterator iter;
+
+	while(m_vectorRank.size() <= m_KSentence)
+	{
+		nSubRow = 0;
+		nSubCols= 0;
+		t_Eye.setlength(nRow_H-m_vectorRank.size(),nCols_H-m_vectorRank.size());
+		t_Q.setlength(nRow_H-m_vectorRank.size(),nCols_H-m_vectorRank.size());
+		t_N.setlength(nRow_H-m_vectorRank.size(),nCols_H-m_vectorRank.size());
+		t_vectRowNo.clear();
+
+		for(t_nIndex=0; t_nIndex<nRow_H; t_nIndex++)
+		{
+			iter = std::find(m_vectorRank.begin(),m_vectorRank.end(),t_nIndex);
+			
+			if (iter == m_vectorRank.end())
+			{
+				t_vectRowNo.push_back(t_nIndex);
+				nSubCols = 0;
+				for(t_nIndex1=0; t_nIndex1<nCols_H; t_nIndex1++)
+				{
+					iter = std::find(m_vectorRank.begin(),m_vectorRank.end(),t_nIndex1);
+					if (iter == m_vectorRank.end())
+					{
+						t_Q[nSubRow][nSubCols] = CosineMatrix[t_nIndex][t_nIndex1];
+						if (t_nIndex == t_nIndex1)
+							t_Eye[nSubRow][nSubCols] = 1;
+						else
+							t_Eye[nSubRow][nSubCols] = 0;
+
+						++nSubCols;
+					}
+				}
+				++nSubRow;
+			}
+		}
+		TRACE("t_Q:%s\n",t_Q.tostring(2).c_str());
+		TRACE("t_Eye:%s\n",t_Eye.tostring(2).c_str());
+		ae_int_t info;
+		matinvreport rep;
+		for(t_nIndex=0; t_nIndex < t_Q.rows(); t_nIndex++)
+		{
+			for(t_nIndex1=0; t_nIndex1 < t_Q.cols(); t_nIndex1++)
+			{
+				t_N[t_nIndex][t_nIndex1] = t_Eye[t_nIndex][t_nIndex1] - t_Q[t_nIndex][t_nIndex1];
+			}
+		}
+		TRACE("t_N:%s\n",t_N.tostring(2).c_str());
+		rmatrixinverse(t_N,info, rep);
+		TRACE("t_N:%s\n",t_N.tostring(2).c_str());
+
+		real_1d_array ones,nvisit,y;
+		ones.setlength(t_N.rows());
+		nvisit.setlength(t_N.rows());
+		y.setlength(t_N.rows());
+		for(t_nIndex=0; t_nIndex < t_N.rows(); t_nIndex++)
+			ones[t_nIndex] = 1;
+		ae_int_t m = t_N.rows();
+		ae_int_t n = t_N.rows();
+		ae_int_t ia = 0;
+		ae_int_t ja = 0;
+		ae_int_t opa = 1;
+		ae_int_t ix = 0;		
+		ae_int_t iy=0;
+
+		rmatrixmv(m,n,t_N,ia,ja,opa,ones,ix,y,iy);
+		double t_val(0.0);
+		int nNo;
+		for(t_nIndex=0; t_nIndex < y.length(); t_nIndex++)
+		{
+			if (t_val < y[t_nIndex])			
+			{
+				nNo = t_nIndex;
+				t_val = y[t_nIndex];
+			}
+
+		}
+		m_vectorRank.push_back(t_vectRowNo[nNo]);
+
+	}
+
+	//////////////////////
+
+
 	delete []pDegree;
 	if(pCosineMatrix)
 	{

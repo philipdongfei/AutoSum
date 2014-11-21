@@ -18,10 +18,20 @@
 #include "interpolation.h"
 
 using namespace alglib;
-
-
-
 #pragma once
+
+
+typedef struct tagLINEINFO
+{
+	tagLINEINFO()
+	{
+		nLineNo = -1;
+		dbValue = 0;
+	}
+
+	int nLineNo;
+	double dbValue;
+}LineInfo,*pLineInfo;
 
 
 class CAutoSumDoc : public CDocument
@@ -35,6 +45,8 @@ public:
 	std::vector<std::string>   m_vectorFilePath;//选中文件地址
 	std::vector<std::string>   m_vectorContent;//文本内容
 	std::vector<std::string>   m_vectorsentences;//文本中所有句子
+	std::vector<int>           m_vectorRank;//句子级数
+	int                        m_KSentence;//摘要句个数
 // 操作
 public:
 	UINT    AutoSummarization(void);
