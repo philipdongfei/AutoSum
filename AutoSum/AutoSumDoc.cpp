@@ -194,6 +194,7 @@ void CAutoSumDoc::OnFileOpen()
     CString pathName,FileName;
 	std::string t_string;
 //	GetCurrentDirectory(MAX_PATH,CurrentDir);
+	InitAutoSum();
 	char CurrentDir[256];
 	memset(CurrentDir,0,256);
 	
@@ -240,7 +241,7 @@ UINT  CAutoSumDoc::AutoSummarization(void)
 		TRACE("auto summarization\n");
 		int nIndex = 0;
 		double dCT = 0.1;
-		real_2d_array pLexRank = ComputingLexRank(m_vectorsentences,dCT);
+		std::vector<int> pLexRank = ComputingLexRank(m_vectorsentences,dCT);
 
 		///////////////get max degree's node
 		int nDegrees(0);
@@ -264,10 +265,10 @@ UINT  CAutoSumDoc::AutoSummarization(void)
 		for (nIndex = 0; nIndex < vectNo.size(); ++nIndex)
 		{
 			int t_nIndex = vectNo[nIndex];
-			TRACE("summary0:%s",m_vectorsentences[t_nIndex].c_str());
-			pBuffer = new char[m_vectorsentences[t_nIndex].size() + 64];
-			memset(pBuffer,0x0,m_vectorsentences[t_nIndex].size() + 64);
-			sprintf(pBuffer,"summary0_0.1(%d):%s\r\n",t_nIndex,m_vectorsentences[t_nIndex].c_str());
+			TRACE("summary0:%s",m_vectorRawSentences[t_nIndex].c_str());
+			pBuffer = new char[m_vectorRawSentences[t_nIndex].size() + 64];
+			memset(pBuffer,0x0,m_vectorRawSentences[t_nIndex].size() + 64);
+			sprintf(pBuffer,"summary0_0.1(%d):%s\r\n",t_nIndex,m_vectorRawSentences[t_nIndex].c_str());
 			strText = pBuffer;
 			WriteSummary(strText);
 			delete []pBuffer;
@@ -279,7 +280,19 @@ UINT  CAutoSumDoc::AutoSummarization(void)
 		strText = "dCT=0.1,P=";
 		WriteSummary(strText);
 
-		 TRACE("\ndCT=0.1,P=%s\n",pLexRank.tostring(5).c_str());
+		for(nIndex = 0; nIndex < pLexRank.size(); nIndex++)
+		{
+			pBuffer = new char[m_vectorRawSentences[pLexRank.at(nIndex)].size() + 64];
+			memset(pBuffer,0x0,m_vectorRawSentences[pLexRank.at(nIndex)].size() + 64);
+			sprintf(pBuffer,"summary1(%d):sentence%d:%s\r\n",nIndex,
+				pLexRank.at(nIndex),m_vectorRawSentences[pLexRank.at(nIndex)].c_str());
+			strText = pBuffer;
+			WriteSummary(strText);
+			delete []pBuffer;
+			pBuffer = NULL;
+		}
+
+	/*	 TRACE("\ndCT=0.1,P=%s\n",pLexRank.tostring(5).c_str());
 		 strText = pLexRank.tostring(5);
 		 WriteSummary(strText);
 		 for(nIndex = 0; nIndex < nCount; nIndex++)
@@ -295,7 +308,7 @@ UINT  CAutoSumDoc::AutoSummarization(void)
 				delete []pBuffer;
 				pBuffer = NULL;
 			 }
-		 }
+		 }*/
 
 		
 		strText.clear();
@@ -324,10 +337,10 @@ UINT  CAutoSumDoc::AutoSummarization(void)
 		for (nIndex = 0; nIndex < vectNo.size(); ++nIndex)
 		{
 			int t_nIndex = vectNo[nIndex];
-			TRACE("summary0:%s",m_vectorsentences[t_nIndex].c_str());
-			pBuffer = new char[m_vectorsentences[t_nIndex].size() + 64];
-			memset(pBuffer,0x0,m_vectorsentences[t_nIndex].size() + 64);
-			sprintf(pBuffer,"summary0_0.2(%d):%s\r\n",t_nIndex,m_vectorsentences[t_nIndex].c_str());
+			TRACE("summary0:%s",m_vectorRawSentences[t_nIndex].c_str());
+			pBuffer = new char[m_vectorRawSentences[t_nIndex].size() + 64];
+			memset(pBuffer,0x0,m_vectorRawSentences[t_nIndex].size() + 64);
+			sprintf(pBuffer,"summary0_0.2(%d):%s\r\n",t_nIndex,m_vectorRawSentences[t_nIndex].c_str());
 			strText = pBuffer;
 			WriteSummary(strText);
 			delete []pBuffer;
@@ -338,7 +351,20 @@ UINT  CAutoSumDoc::AutoSummarization(void)
 
 		strText = "dCT=0.2,P=";
 		WriteSummary(strText);
-		 TRACE("\ndCT=0.2,P=%s\n",pLexRank.tostring(5).c_str());
+
+		for(nIndex = 0; nIndex < pLexRank.size(); nIndex++)
+		{
+			pBuffer = new char[m_vectorRawSentences[pLexRank.at(nIndex)].size() + 64];
+			memset(pBuffer,0x0,m_vectorRawSentences[pLexRank.at(nIndex)].size() + 64);
+			sprintf(pBuffer,"summary2(%d):sentence%d:%s\r\n",nIndex,
+				pLexRank.at(nIndex),m_vectorRawSentences[pLexRank.at(nIndex)].c_str());
+			strText = pBuffer;
+			WriteSummary(strText);
+			delete []pBuffer;
+			pBuffer = NULL;
+		}
+
+	/*	 TRACE("\ndCT=0.2,P=%s\n",pLexRank.tostring(5).c_str());
 		 strText = pLexRank.tostring(5);
 		 WriteSummary(strText);
 		 for(nIndex = 0; nIndex < nCount; nIndex++)
@@ -354,7 +380,7 @@ UINT  CAutoSumDoc::AutoSummarization(void)
 				delete []pBuffer;
 				pBuffer = NULL;
 			 }
-		 }
+		 }*/
 		
 		strText.clear();
 		dCT = 0.3;
@@ -382,10 +408,10 @@ UINT  CAutoSumDoc::AutoSummarization(void)
 		for (nIndex = 0; nIndex < vectNo.size(); ++nIndex)
 		{
 			int t_nIndex = vectNo[nIndex];
-			TRACE("summary0:%s",m_vectorsentences[t_nIndex].c_str());
-			pBuffer = new char[m_vectorsentences[t_nIndex].size() + 64];
-			memset(pBuffer,0x0,m_vectorsentences[t_nIndex].size() + 64);
-			sprintf(pBuffer,"summary0_0.3(%d):%s\r\n",t_nIndex,m_vectorsentences[t_nIndex].c_str());
+			TRACE("summary0:%s",m_vectorRawSentences[t_nIndex].c_str());
+			pBuffer = new char[m_vectorRawSentences[t_nIndex].size() + 64];
+			memset(pBuffer,0x0,m_vectorRawSentences[t_nIndex].size() + 64);
+			sprintf(pBuffer,"summary0_0.3(%d):%s\r\n",t_nIndex,m_vectorRawSentences[t_nIndex].c_str());
 			strText = pBuffer;
 			WriteSummary(strText);
 			delete []pBuffer;
@@ -395,9 +421,9 @@ UINT  CAutoSumDoc::AutoSummarization(void)
 		//////////////////////
 		strText = "dCT=0.3,P=";
 		WriteSummary(strText);
-		 TRACE("\ndCT=0.3,P=%s\n",pLexRank.tostring(5).c_str());
-		 strText = pLexRank.tostring(5);
-		 WriteSummary(strText);
+	//	 TRACE("\ndCT=0.3,P=%s\n",pLexRank.tostring(5).c_str());
+	//	 strText = pLexRank.tostring(5);
+	//	 WriteSummary(strText);
 
 
 		
@@ -412,7 +438,7 @@ UINT  CAutoSumDoc::AutoSummarization(void)
 UINT  CAutoSumDoc::PretreatComment(void)
 {
 	UINT nRet(0);
-	std::string  strSentence(""),strText("");
+	std::string  strSentence(""),strText(""),strRawSentence("");
 
 	char Buffer[32];
 	
@@ -501,7 +527,7 @@ UINT  CAutoSumDoc::PretreatComment(void)
 			nRstLen = ICTCLAS_ParagraphProcess(sSentence,nSize,sRst,CODE_TYPE_UNKNOWN,1);  //字符串处理
 
 			int nSencNo(1),nWordNo(1),nLineNo(1),nTotal(0);
-			CString szLine(_T("")),szRoot(_T("")),szTemp(_T("")),szWord(_T("")),szLine1(_T(""));
+			CString szLine(_T("")),szRoot(_T("")),szTemp(_T("")),szWord(_T("")),szLine1(_T("")),szRawWord(_T(""));
 
 			char seps[] = "\r\n";
 			char *token=NULL;
@@ -526,6 +552,7 @@ UINT  CAutoSumDoc::PretreatComment(void)
 					if (nPos3 > 0)
 					{
 						szType = szWord.Mid(nPos3+1);
+						szRawWord = szWord.Left(nPos3);
 					}
 					else
 					{
@@ -533,7 +560,9 @@ UINT  CAutoSumDoc::PretreatComment(void)
 						continue;
 					}
 
-				//	szWord = szWord.Left(nPos3);	
+				//	szWord = szWord.Left(nPos3);
+					if (szRawWord.GetLength() > 0)
+						strRawSentence += szRawWord;
 					strSentence += szWord;
 					strSentence += '|';
 				//	szTemp.Format("%c",szType.GetAt(0));
@@ -545,9 +574,10 @@ UINT  CAutoSumDoc::PretreatComment(void)
 						{
 							++nSencNo;
 							nWordNo = 0;
-						
+							m_vectorRawSentences.push_back(strRawSentence);
 							m_vectorsentences.push_back(strSentence);
 							strSentence.clear();
+							strRawSentence.clear();
 						
 						}
 					}
@@ -574,7 +604,7 @@ UINT  CAutoSumDoc::PretreatComment(void)
 	return nRet;
 }
 
-real_2d_array CAutoSumDoc::ComputingLexRank(std::vector<std::string> &Sentences,double dCT)
+std::vector<int> CAutoSumDoc::ComputingLexRank(std::vector<std::string> &Sentences,double dCT)
 {
 	int nCount = Sentences.size();
 	double **pLexRank = NULL;//new double[nCount];
@@ -798,6 +828,7 @@ real_2d_array CAutoSumDoc::ComputingLexRank(std::vector<std::string> &Sentences,
 	///////重新分级，选取k-1个经常经过的节点。
 	int nIndex = 0;
 	int t_nIndex(0),t_nIndex1(0),nRow_H(4),nCols_H(4),nSubRow(0),nSubCols(0);
+	m_vectorRank.clear();
 	for(nIndex = 0; nIndex <nCount; nIndex++)
 	{
 		if (P[nIndex][0] == 1.0)
@@ -903,7 +934,7 @@ real_2d_array CAutoSumDoc::ComputingLexRank(std::vector<std::string> &Sentences,
 		pCosineMatrix = NULL;
 	}
 
-	return P;
+	return m_vectorRank;
 }
 
 double  CAutoSumDoc::idf_modified_cosine(std::string Sentence1,std::string Sentence2)
@@ -1168,6 +1199,16 @@ bool   CAutoSumDoc::WriteSummary(std::string strText)//写文件
 	out.close();
 	
 	return bRet;
+}
+
+void   CAutoSumDoc::InitAutoSum()
+{
+	m_vectorFilePath.clear();//选中文件地址
+	m_vectorContent.clear();//文本内容
+	m_vectorsentences.clear();//文本中带分词信息所有句子
+	m_vectorRawSentences.clear();//原始文本中所有句子
+	m_vectorRank.clear();//句子级数
+	m_ArrayDeg.setlength(0);
 }
 
 

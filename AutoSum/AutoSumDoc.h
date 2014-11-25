@@ -44,20 +44,23 @@ protected: // 仅从序列化创建
 public:
 	std::vector<std::string>   m_vectorFilePath;//选中文件地址
 	std::vector<std::string>   m_vectorContent;//文本内容
-	std::vector<std::string>   m_vectorsentences;//文本中所有句子
+	std::vector<std::string>   m_vectorsentences;//文本中带分词信息所有句子
+	std::vector<std::string>   m_vectorRawSentences;//原始文本中所有句子
 	std::vector<int>           m_vectorRank;//句子级数
 	int                        m_KSentence;//摘要句个数
+	integer_1d_array m_ArrayDeg;//记录节点的度数组
 // 操作
 public:
 	UINT    AutoSummarization(void);
 	UINT    PretreatComment(void);//文本预处理
-	real_2d_array	ComputingLexRank(std::vector<std::string> &Sentences,double dCT);
+	std::vector<int>	ComputingLexRank(std::vector<std::string> &Sentences,double dCT);
 	double  idf_modified_cosine(std::string Sentence1,std::string Sentence2);
 	double  **PowerMethod(double **pCosineMatrix,int nCount,double dError);
 	real_2d_array  PowerMethod(const real_2d_array &CosineMatrix,int nCount,double dError);
 	int		GetTF(std::string &strWord,std::string Sentence);
 	double  GetIDF(std::string &strWord);
 	bool    WriteSummary(std::string strText);//写文件
+	void    InitAutoSum();
 // 重写
 public:
 	virtual BOOL OnNewDocument();
@@ -75,8 +78,8 @@ public:
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 
-protected:
-	integer_1d_array m_ArrayDeg;//记录节点的度数组
+
+	
 // 生成的消息映射函数
 protected:
 	DECLARE_MESSAGE_MAP()
